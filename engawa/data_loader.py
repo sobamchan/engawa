@@ -24,7 +24,7 @@ def get_dataloader(
 ) -> DataLoader:
     bos_token = tokenizer.bos_token
     eos_token = tokenizer.eos_token
-    ds = load_dataset("text", data_files=data_path, split=split, streaming=True).map(
+    ds = load_dataset("text", data_files=data_path, split=split).map(
         lambda x: tokenizer(
             tokenize_sents(x["text"], bos_token, eos_token),
             truncation=True,
