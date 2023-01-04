@@ -4,3 +4,4 @@ outputs
 !.gitkeep
 tmp
 .DS_Store
+dist/
