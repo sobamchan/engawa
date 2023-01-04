@@ -31,7 +31,7 @@ def get_dataloader(
             max_length=max_length,
             padding="max_length",
         )
-    )
+    ).remove_columns(["text"])
 
     assert isinstance(tokenizer.bos_token_id, int)
     dc = DataCollatorForDenoisingTasks(
