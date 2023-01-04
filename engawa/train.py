@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 
+import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.csv_logs import CSVLogger
@@ -32,8 +33,10 @@ if __name__ == "__main__":
         required=True,
         help="Path to save generated files.",
     )
+    parser.add_argument("--ckpt-path", type=str, required=False, default=None)
     parser.add_argument("--wandb-proj-name", type=str, required=False, default=None)
 
+    parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--bs", type=int, required=True)
     parser.add_argument("--max-epochs", type=int, required=True)
     parser.add_argument("--num-training-steps", type=int, default=500000)
@@ -47,6 +50,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     tokenizer = BartTokenizerFast(tokenizer_file=args.tokenizer_file)
+
+    pl.seed_everything(args.seed)
 
     train_dl = get_dataloader(
         args.train_file,
@@ -75,13 +80,21 @@ if __name__ == "__main__":
         logger = CSVLogger(args.default_root_dir)
 
     checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=1, mode="min")
+
+    num_gpus = torch.cuda.device_count()
+    devices = None if num_gpus == 0 else num_gpus
+    accelerator = "cpu" if num_gpus == 0 else "gpu"
+
     trainer = pl.Trainer(
         max_epochs=args.max_epochs,
         deterministic=True,
         default_root_dir=args.default_root_dir,
         callbacks=[checkpoint_callback],
         logger=logger,
+        accelerator=accelerator,
+        devices=devices,
     )
+
     model = EngawaModel(
         tokenizer,
         args.lr,
@@ -89,4 +102,7 @@ if __name__ == "__main__":
         args.num_warmup_steps,
         args.num_training_steps,
     )
-    trainer.fit(model, train_dl, val_dl)
+
+    if args.ckpt_path is not None:
+        print(f"Resume training from {args.ckpt_path}...")
+    trainer.fit(model, train_dl, val_dl, ckpt_path=args.ckpt_path)

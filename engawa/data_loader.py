@@ -38,4 +38,5 @@ def get_dataloader(
         tokenizer=tokenizer, mask_ratio=mask_ratio, poisson_lambda=poisson_lambda
     )
 
-    return DataLoader(ds, batch_size=bs, collate_fn=dc)
+    shuffle = True if split == "train" else False
+    return DataLoader(ds, batch_size=bs, collate_fn=dc, shuffle=shuffle)
