@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 
 import numpy as np
 import sienna
+import torch
 from numpy import dot
 from numpy.linalg import norm
 
@@ -31,16 +32,17 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    target_texts = sienna.load(args.pool_text_file)
-    model = EngawaModel.load_from_checkpoint(args.ckpt_path)
-    bart = model.bart.model
-    tok = model.tokenizer
+    with torch.no_grad():
+        target_texts = sienna.load(args.pool_text_file)
+        model = EngawaModel.load_from_checkpoint(args.ckpt_path)
+        bart = model.bart.model
+        tok = model.tokenizer
 
-    query_vec = bart(**tok(args.query_text, return_tensors="pt")).last_hidden_state[0, 0, :].numpy()
-    target_vecs = bart(**tok(target_texts, return_tensors="pt")).last_hidden_state[:, 0, :].numpy()
+        query_vec = bart(**tok(args.query_text, return_tensors="pt")).last_hidden_state[0, 0, :].numpy()
+        target_vecs = bart(**tok(target_texts, return_tensors="pt")).last_hidden_state[:, 0, :].numpy()
 
-    cossims = []
-    for i in range(len(target_texts)):
-        cossims.append(cossim(query_vec, target_vecs[i, :]))
+        cossims = []
+        for i in range(len(target_texts)):
+            cossims.append(cossim(query_vec, target_vecs[i, :]))
 
-    print(cossims)
+        print(cossims)
