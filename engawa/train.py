@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
-import torch
 import pytorch_lightning as pl
+import torch
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.csv_logs import CSVLogger
 from pytorch_lightning.loggers.wandb import WandbLogger
@@ -35,11 +35,25 @@ if __name__ == "__main__":
     )
     parser.add_argument("--ckpt-path", type=str, required=False, default=None)
     parser.add_argument("--wandb-proj-name", type=str, required=False, default=None)
+    parser.add_argument(
+        "--val-check-interval", type=float, required=False, default=0.25
+    )
+
+    # parser.add_argument("--max-epochs", type=int, required=True)
+    parser.add_argument(
+        "--max-steps", type=int, default=500000, help="Set -1 for infinite training."
+    )
+
+    parser.add_argument(
+        "--model-size",
+        type=str,
+        choices=["base", "large"],
+        default="large",
+        help="BART size, `base` or `large`.",
+    )
 
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--bs", type=int, required=True)
-    parser.add_argument("--max-epochs", type=int, required=True)
-    parser.add_argument("--num-training-steps", type=int, default=500000)
     parser.add_argument("--max-length", type=int, default=1024)
     parser.add_argument("--lr", type=float, default=0.0004)
     parser.add_argument("--weight-decay", type=float, default=0.01)
@@ -47,6 +61,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--mask-ratio", type=float, default=0.3)
     parser.add_argument("--poisson_lambda", type=float, default=3.5)
+
     args = parser.parse_args()
 
     tokenizer = BartTokenizerFast(tokenizer_file=args.tokenizer_file)
@@ -86,7 +101,9 @@ if __name__ == "__main__":
     accelerator = "cpu" if num_gpus == 0 else "gpu"
 
     trainer = pl.Trainer(
-        max_epochs=args.max_epochs,
+        max_epochs=-1,
+        max_steps=args.max_steps,
+        val_check_interval=args.val_check_interval,
         deterministic=True,
         default_root_dir=args.default_root_dir,
         callbacks=[checkpoint_callback],
@@ -100,7 +117,8 @@ if __name__ == "__main__":
         args.lr,
         args.weight_decay,
         args.num_warmup_steps,
-        args.num_training_steps,
+        args.max_steps if args.max_steps > -1 else 500000,
+        size=args.model_size,
     )
 
     if args.ckpt_path is not None:
