@@ -14,6 +14,7 @@ pytorch-lightning = "^1.8.6"
 nltk = "^3.8"
 wandb = "^0.13.7"
 datasets = "^2.8.0"
+sienna = "^0.1.5"
 
 
 [tool.poetry.group.dev.dependencies]
