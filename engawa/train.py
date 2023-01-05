@@ -41,26 +41,31 @@ if __name__ == "__main__":
 
     # parser.add_argument("--max-epochs", type=int, required=True)
     parser.add_argument(
-        "--max-steps", type=int, default=500000, help="Set -1 for infinite training."
+        "--max-steps",
+        type=int,
+        required=False,
+        default=500000,
+        help="Set -1 for infinite training.",
     )
 
     parser.add_argument(
         "--model-size",
         type=str,
+        required=False,
         choices=["base", "large"],
         default="large",
         help="BART size, `base` or `large`.",
     )
 
-    parser.add_argument("--seed", type=int, required=True)
-    parser.add_argument("--bs", type=int, required=True)
-    parser.add_argument("--max-length", type=int, default=1024)
-    parser.add_argument("--lr", type=float, default=0.0004)
-    parser.add_argument("--weight-decay", type=float, default=0.01)
-    parser.add_argument("--num-warmup-steps", type=int, default=10000)
+    parser.add_argument("--seed", type=int, required=False, default=10)
+    parser.add_argument("--bs", type=int, required=False, default=32)
+    parser.add_argument("--max-length", type=int, required=False, default=1024)
+    parser.add_argument("--lr", type=float, required=False, default=0.0004)
+    parser.add_argument("--weight-decay", type=float, required=False, default=0.01)
+    parser.add_argument("--num-warmup-steps", type=int, required=False, default=10000)
 
-    parser.add_argument("--mask-ratio", type=float, default=0.3)
-    parser.add_argument("--poisson_lambda", type=float, default=3.5)
+    parser.add_argument("--mask-ratio", type=float, required=False, default=0.3)
+    parser.add_argument("--poisson_lambda", type=float, required=False, default=3.5)
 
     args = parser.parse_args()
 
