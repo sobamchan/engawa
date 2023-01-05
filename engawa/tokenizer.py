@@ -1,5 +1,5 @@
-from argparse import ArgumentParser
 import os
+from argparse import ArgumentParser
 
 from tokenizers import (Tokenizer, decoders, models, pre_tokenizers,
                         processors, trainers)
@@ -30,14 +30,14 @@ def read_iterator(dpath: str, bs: int):
             cnt += 1
 
 
-def main(data_path: str, save_dir: str, batch_size: int):
+def main(data_path: str, save_dir: str, batch_size: int, vocab_size: int):
     tokenizer = Tokenizer(models.BPE())
     tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
     tokenizer.decoder = decoders.ByteLevel()
 
     # Set the training hyperparameters
     trainer = trainers.BpeTrainer(
-        vocab_size=50000,
+        vocab_size=vocab_size,
         special_tokens=[BOS, PAD, EOS, UNK, MASK],
         initial_alphabet=pre_tokenizers.ByteLevel.alphabet(),
     )
@@ -76,6 +76,12 @@ if __name__ == "__main__":
         type=int,
         default=32,
     )
+    parser.add_argument(
+        "--vocab-size",
+        "-v",
+        type=int,
+        default=50000,
+    )
     args = parser.parse_args()
 
-    main(args.data_path, args.save_dir, args.batch_size)
+    main(args.data_path, args.save_dir, args.batch_size, args.vocab_size)
