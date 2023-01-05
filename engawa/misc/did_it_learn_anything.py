@@ -41,7 +41,7 @@ if __name__ == "__main__":
         query_vec = (
             bart(
                 **tok(
-                    args.query_text, padding=True, trunctation=True, return_tensors="pt"
+                    args.query_text, padding=True, truncation=True, return_tensors="pt"
                 )
             )
             .last_hidden_state[0, 0, :]
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         )
         target_vecs = (
             bart(
-                **tok(target_texts, padding=True, trunctation=True, return_tensors="pt")
+                **tok(target_texts, padding=True, truncation=True, return_tensors="pt")
             )
             .last_hidden_state[:, 0, :]
             .numpy()
