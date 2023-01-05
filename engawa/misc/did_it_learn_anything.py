@@ -36,8 +36,8 @@ if __name__ == "__main__":
     bart = model.bart.model
     tok = model.tokenizer
 
-    query_vec = bart(tok(args.query_text, return_tensors="pt"))[0, 0, :].numpy()
-    target_vecs = bart(tok(target_texts, return_tensors="pt"))[:, 0, :].numpy()
+    query_vec = bart(**tok(args.query_text, return_tensors="pt"))[0, 0, :].numpy()
+    target_vecs = bart(**tok(target_texts, return_tensors="pt"))[:, 0, :].numpy()
 
     cossims = []
     for i in range(len(target_texts)):
