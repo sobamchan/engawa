@@ -36,6 +36,7 @@ if __name__ == "__main__":
         target_texts = sienna.load(args.pool_text_file)
         model = EngawaModel.load_from_checkpoint(args.ckpt_path)
         bart = model.bart.model
+        bart.eval()
         tok = model.tokenizer
 
         query_vec = (
