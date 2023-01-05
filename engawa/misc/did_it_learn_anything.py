@@ -38,8 +38,22 @@ if __name__ == "__main__":
         bart = model.bart.model
         tok = model.tokenizer
 
-        query_vec = bart(**tok(args.query_text, return_tensors="pt")).last_hidden_state[0, 0, :].numpy()
-        target_vecs = bart(**tok(target_texts, return_tensors="pt")).last_hidden_state[:, 0, :].numpy()
+        query_vec = (
+            bart(
+                **tok(
+                    args.query_text, padding=True, trunctation=True, return_tensors="pt"
+                )
+            )
+            .last_hidden_state[0, 0, :]
+            .numpy()
+        )
+        target_vecs = (
+            bart(
+                **tok(target_texts, padding=True, trunctation=True, return_tensors="pt")
+            )
+            .last_hidden_state[:, 0, :]
+            .numpy()
+        )
 
         cossims = []
         for i in range(len(target_texts)):
