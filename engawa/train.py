@@ -1,5 +1,4 @@
-from argparse import ArgumentParser
-
+import click
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -10,94 +9,117 @@ from transformers.models.bart.tokenization_bart_fast import BartTokenizerFast
 from engawa.data_loader import get_dataloader
 from engawa.model import EngawaModel
 
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument(
-        "--tokenizer-file", type=str, required=True, help="Your `tokenizer.json`"
-    )
-    parser.add_argument(
-        "--train-file",
-        type=str,
-        required=True,
-        help="Line separated text file for training.",
-    )
-    parser.add_argument(
-        "--val-file",
-        type=str,
-        required=True,
-        help="Line separated text file for validation.",
-    )
-    parser.add_argument(
-        "--default-root-dir",
-        type=str,
-        required=True,
-        help="Path to save generated files.",
-    )
-    parser.add_argument("--ckpt-path", type=str, required=False, default=None)
-    parser.add_argument("--wandb-proj-name", type=str, required=False, default=None)
-    parser.add_argument(
-        "--val-check-interval", type=float, required=False, default=0.25
-    )
 
-    # parser.add_argument("--max-epochs", type=int, required=True)
-    parser.add_argument(
-        "--max-steps",
-        type=int,
-        required=False,
-        default=500000,
-        help="Set -1 for infinite training.",
-    )
+@click.command()
+@click.option(
+    "--tokenizer-file", type=str, required=True, help="Path to a tokenizer file."
+)
+@click.option(
+    "--train-file",
+    type=str,
+    required=True,
+    help="Line separated text file for training.",
+)
+@click.option(
+    "--val-file",
+    type=str,
+    required=True,
+    help="Line separated text file for validation.",
+)
+@click.option(
+    "--default-root-dir", type=str, required=True, help="Path to save generated files."
+)
+@click.option(
+    "--ckpt-path",
+    type=str,
+    required=False,
+    default=None,
+    help="If given, start from that checkpoint.",
+)
+@click.option(
+    "--wandb-proj-name",
+    type=str,
+    required=False,
+    default=None,
+    help="If given, log to that wandb project.",
+)
+@click.option(
+    "--val-check-interval",
+    type=float,
+    required=False,
+    default=0.25,
+)
+@click.option(
+    "--max-steps",
+    type=int,
+    required=False,
+    default=500000,
+    help="Set -1 for infinite training.",
+)
+@click.option(
+    "--model-type",
+    type=click.Choice(
+        ["base", "large"],
+        case_sensitive=False,
+    ),
+    required=False,
+    default="large",
+    help="BART type, `base` or `large`.",
+)
+@click.option("--seed", type=int, required=False, default=10)
+@click.option("--bs", type=int, required=False, default=32)
+@click.option("--max-length", type=int, required=False, default=1024)
+@click.option("--lr", type=float, required=False, default=0.0004)
+@click.option("--weight-decay", type=float, required=False, default=0.01)
+@click.option("--num-warmup-steps", type=int, required=False, default=10000)
+@click.option("--mask-ratio", type=float, required=False, default=0.3)
+@click.option("--poisson_lambda", type=float, required=False, default=3.5)
+def train_model(
+    tokenizer_file: str,
+    train_file: str,
+    val_file: str,
+    default_root_dir: str,
+    ckpt_path: str,
+    wandb_proj_name: str,
+    val_check_interval: float,
+    max_steps: int,
+    model_type: str,
+    seed: int,
+    bs: int,
+    max_length: int,
+    lr: float,
+    weight_decay: float,
+    num_warmup_steps: int,
+    mask_ratio: float,
+    poisson_lambda: float,
+):
+    tokenizer = BartTokenizerFast(tokenizer_file=tokenizer_file)
 
-    parser.add_argument(
-        "--model-size",
-        type=str,
-        required=False,
-        choices=["base", "large"],
-        default="large",
-        help="BART size, `base` or `large`.",
-    )
-
-    parser.add_argument("--seed", type=int, required=False, default=10)
-    parser.add_argument("--bs", type=int, required=False, default=32)
-    parser.add_argument("--max-length", type=int, required=False, default=1024)
-    parser.add_argument("--lr", type=float, required=False, default=0.0004)
-    parser.add_argument("--weight-decay", type=float, required=False, default=0.01)
-    parser.add_argument("--num-warmup-steps", type=int, required=False, default=10000)
-
-    parser.add_argument("--mask-ratio", type=float, required=False, default=0.3)
-    parser.add_argument("--poisson_lambda", type=float, required=False, default=3.5)
-
-    args = parser.parse_args()
-
-    tokenizer = BartTokenizerFast(tokenizer_file=args.tokenizer_file)
-
-    pl.seed_everything(args.seed)
+    pl.seed_everything(seed)
 
     train_dl = get_dataloader(
-        args.train_file,
+        train_file,
         "train",
-        args.bs,
+        bs,
         tokenizer,
-        args.mask_ratio,
-        args.poisson_lambda,
-        max_length=args.max_length,
+        mask_ratio,
+        poisson_lambda,
+        max_length=max_length,
     )
     val_dl = get_dataloader(
-        args.val_file,
+        val_file,
         "validation",
-        args.bs,
+        bs,
         tokenizer,
-        args.mask_ratio,
-        args.poisson_lambda,
-        max_length=args.max_length,
+        mask_ratio,
+        poisson_lambda,
+        max_length=max_length,
     )
 
-    if args.wandb_proj_name is not None:
-        logger = WandbLogger(
-            project=args.wandb_proj_name, save_dir=args.default_root_dir
-        )
+    if wandb_proj_name is not None:
+        logger = WandbLogger(project=wandb_proj_name, save_dir=default_root_dir)
     else:
-        logger = CSVLogger(args.default_root_dir)
+        logger = CSVLogger(default_root_dir)
 
     checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=1, mode="min")
 
@@ -107,10 +129,10 @@ if __name__ == "__main__":
 
     trainer = pl.Trainer(
         max_epochs=-1,
-        max_steps=args.max_steps,
-        val_check_interval=args.val_check_interval,
+        max_steps=max_steps,
+        val_check_interval=val_check_interval,
         deterministic=True,
-        default_root_dir=args.default_root_dir,
+        default_root_dir=default_root_dir,
         callbacks=[checkpoint_callback],
         logger=logger,
         accelerator=accelerator,
@@ -119,13 +141,13 @@ if __name__ == "__main__":
 
     model = EngawaModel(
         tokenizer,
-        args.lr,
-        args.weight_decay,
-        args.num_warmup_steps,
-        args.max_steps if args.max_steps > -1 else 500000,
-        size=args.model_size,
+        lr,
+        weight_decay,
+        num_warmup_steps,
+        max_steps if max_steps > -1 else 500000,
+        model_type=model_type,
     )
 
-    if args.ckpt_path is not None:
-        print(f"Resume training from {args.ckpt_path}...")
-    trainer.fit(model, train_dl, val_dl, ckpt_path=args.ckpt_path)
+    if ckpt_path is not None:
+        print(f"Resume training from {ckpt_path}...")
+    trainer.fit(model, train_dl, val_dl, ckpt_path=ckpt_path)

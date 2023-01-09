@@ -14,7 +14,7 @@ class EngawaModel(pl.LightningModule):
         weight_decay: float,
         num_warmup_steps: int,
         num_training_steps: int,
-        size: int,
+        model_type: str,
     ) -> None:
         super().__init__()
         self.tokenizer = tokenizer
@@ -23,7 +23,7 @@ class EngawaModel(pl.LightningModule):
         bos_token_id = tokenizer.bos_token_id
         pad_token_id = tokenizer.pad_token_id
         vocab_size = tokenizer.vocab_size
-        config = BartConfig.from_pretrained(f"facebook/bart-{size}")
+        config = BartConfig.from_pretrained(f"facebook/bart-{model_type}")
         config.update_from_string(
             f"eos_token_id={eos_token_id},bos_token_id={bos_token_id},pad_token_id={pad_token_id},vocab_size={vocab_size}"
         )

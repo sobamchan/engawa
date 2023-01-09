@@ -1,6 +1,6 @@
 import os
-from argparse import ArgumentParser
 
+import click
 from tokenizers import (Tokenizer, decoders, models, pre_tokenizers,
                         processors, trainers)
 
@@ -30,7 +30,26 @@ def read_iterator(dpath: str, bs: int):
             cnt += 1
 
 
-def main(data_path: str, save_dir: str, batch_size: int, vocab_size: int):
+@click.command()
+@click.option(
+    "--data-path", type=str, required=True, help="Path to a training text file."
+)
+@click.option(
+    "--save-dir", type=str, required=True, help="Dir to save trianed tokenizer."
+)
+@click.option(
+    "--batch-size",
+    type=int,
+    default=32,
+    help="Batch size for building tokenizer, smaller value for limited resourced situation but takes more time.",
+)
+@click.option(
+    "--vocab-size",
+    type=int,
+    default=50000,
+    help="Number of unique tokens in the vocabulary.",
+)
+def train_tokenizer(data_path: str, save_dir: str, batch_size: int, vocab_size: int):
     tokenizer = Tokenizer(models.BPE())
     tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
     tokenizer.decoder = decoders.ByteLevel()
@@ -52,36 +71,3 @@ def main(data_path: str, save_dir: str, batch_size: int, vocab_size: int):
 
     # And save it:
     tokenizer.save(os.path.join(save_dir, "tokenizer.json"))
-
-
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument(
-        "--data-path",
-        "-d",
-        type=str,
-        required=True,
-        help="Path to a training text file.",
-    )
-    parser.add_argument(
-        "--save-dir",
-        "-s",
-        type=str,
-        required=True,
-        help="Dir to save trained tokenizer.",
-    )
-    parser.add_argument(
-        "--batch-size",
-        "-b",
-        type=int,
-        default=32,
-    )
-    parser.add_argument(
-        "--vocab-size",
-        "-v",
-        type=int,
-        default=50000,
-    )
-    args = parser.parse_args()
-
-    main(args.data_path, args.save_dir, args.batch_size, args.vocab_size)
