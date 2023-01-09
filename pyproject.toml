@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "engawa"
-version = "0.1.2"
+version = "0.1.4"
 description = ""
 authors = ["sobamchan <oh.sore.sore.soutarou@gmail.com>"]
 readme = "README.md"

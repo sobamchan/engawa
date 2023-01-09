@@ -9,8 +9,8 @@ def cli():
     pass
 
 
-cli.add_command(train_tokenizer)
 cli.add_command(train_model)
+cli.add_command(train_tokenizer)
 
 
 def main():
