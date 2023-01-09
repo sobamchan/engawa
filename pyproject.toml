@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "engawa"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["sobamchan <oh.sore.sore.soutarou@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.10.8"
+python = "^3.10.8"
 sentencepiece = "^0.1.97"
 tokenizers = "^0.13.2"
 transformers = "^4.25.1"
