@@ -1,5 +1,7 @@
 # engawa
 
+<img align="center" src="img/logo.png" width="200" height="200" />
+
 **NOT YET FULLY TESTED**
 
 A simple implementation to pre-train BART from scratch with your own corpus.
