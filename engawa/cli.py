@@ -1,17 +1,8 @@
-import click
+import typer
 
 from engawa.tokenizer import train_tokenizer
 from engawa.train import train_model
 
-
-@click.group()
-def cli():
-    pass
-
-
-cli.add_command(train_model)
-cli.add_command(train_tokenizer)
-
-
-def main():
-    cli()
+app = typer.Typer()
+app.command()(train_tokenizer)
+app.command()(train_model)

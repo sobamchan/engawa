@@ -29,7 +29,11 @@ engawa train-tokenizer --help
 ## Pre-train BART
 
 ```bash
-engawa train-model --tokenizer-file /path/to/tokenizer.json --train-file /path/to/train.txt --val-file /path/to/val.txt --default-root-dir /path/to/save/things
+engawa train-model \
+  --tokenizer-file /path/to/tokenizer.json \
+  --train-file /path/to/train.txt \
+  --val-file /path/to/val.txt \
+  --default-root-dir /path/to/save/things
 
 # Checkout other options by
 engawa train-model --help

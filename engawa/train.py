@@ -1,6 +1,9 @@
-import click
+from enum import Enum
+from typing import Annotated
+
 import pytorch_lightning as pl
 import torch
+import typer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.csv_logs import CSVLogger
 from pytorch_lightning.loggers.wandb import WandbLogger
@@ -10,88 +13,43 @@ from engawa.data_loader import get_dataloader
 from engawa.model import EngawaModel
 
 
-@click.command()
-@click.option(
-    "--tokenizer-file", type=str, required=True, help="Path to a tokenizer file."
-)
-@click.option(
-    "--train-file",
-    type=str,
-    required=True,
-    help="Line separated text file for training.",
-)
-@click.option(
-    "--val-file",
-    type=str,
-    required=True,
-    help="Line separated text file for validation.",
-)
-@click.option(
-    "--default-root-dir", type=str, required=True, help="Path to save generated files."
-)
-@click.option(
-    "--ckpt-path",
-    type=str,
-    required=False,
-    default=None,
-    help="If given, start from that checkpoint.",
-)
-@click.option(
-    "--wandb-proj-name",
-    type=str,
-    required=False,
-    default=None,
-    help="If given, log to that wandb project.",
-)
-@click.option(
-    "--val-check-interval",
-    type=float,
-    required=False,
-    default=0.25,
-)
-@click.option(
-    "--max-steps",
-    type=int,
-    required=False,
-    default=500000,
-    help="Set -1 for infinite training.",
-)
-@click.option(
-    "--model-type",
-    type=click.Choice(
-        ["base", "large"],
-        case_sensitive=False,
-    ),
-    required=False,
-    default="large",
-    help="BART type, `base` or `large`.",
-)
-@click.option("--seed", type=int, required=False, default=10)
-@click.option("--bs", type=int, required=False, default=32)
-@click.option("--max-length", type=int, required=False, default=1024)
-@click.option("--lr", type=float, required=False, default=0.0004)
-@click.option("--weight-decay", type=float, required=False, default=0.01)
-@click.option("--num-warmup-steps", type=int, required=False, default=10000)
-@click.option("--mask-ratio", type=float, required=False, default=0.3)
-@click.option("--poisson_lambda", type=float, required=False, default=3.5)
+class ModelType(str, Enum):
+    base = "base"
+    large = "large"
+
+
 def train_model(
-    tokenizer_file: str,
-    train_file: str,
-    val_file: str,
-    default_root_dir: str,
-    ckpt_path: str,
-    wandb_proj_name: str,
-    val_check_interval: float,
-    max_steps: int,
-    model_type: str,
-    seed: int,
-    bs: int,
-    max_length: int,
-    lr: float,
-    weight_decay: float,
-    num_warmup_steps: int,
-    mask_ratio: float,
-    poisson_lambda: float,
+    tokenizer_file: Annotated[str, typer.Option(help="Path to a tokenizer file.")],
+    train_file: Annotated[
+        str, typer.Option(help="Line separated text file for training.")
+    ],
+    val_file: Annotated[
+        str, typer.Option(help="Line separated text file for validation.")
+    ],
+    default_root_dir: Annotated[
+        str, typer.Option(help="Path to save generated files.")
+    ],
+    ckpt_path: Annotated[
+        str, typer.Option(help="If given, start from that checkpoint.")
+    ] = None,
+    wandb_proj_name: Annotated[
+        str, typer.Option(help="If given, log to that wandb project.")
+    ] = None,
+    val_check_interval: float = 0.25,
+    max_steps: Annotated[
+        int, typer.Option(help="Set -1 for infinite training.")
+    ] = 500000,
+    model_type: Annotated[
+        ModelType, typer.Option(help="BART type, `base` or `large`.")
+    ] = ModelType.large,
+    seed: int = 10,
+    bs: int = 32,
+    max_length: int = 1024,
+    lr: float = 0.0004,
+    weight_decay: float = 0.01,
+    num_warmup_steps: int = 10000,
+    mask_ratio: float = 0.3,
+    poisson_lambda: float = 3.5,
 ):
     tokenizer = BartTokenizerFast(tokenizer_file=tokenizer_file)
 

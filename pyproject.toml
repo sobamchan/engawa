@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "engawa"
-version = "0.1.4"
+version = "0.1.5"
 description = ""
 authors = ["sobamchan <oh.sore.sore.soutarou@gmail.com>"]
 readme = "README.md"
@@ -16,6 +16,7 @@ wandb = "^0.13.7"
 datasets = "^2.8.0"
 sienna = "^0.1.5"
 click = "^8.1.3"
+typer = "^0.9.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -23,10 +24,11 @@ neovim = "^0.3.1"
 ipython = "^8.7.0"
 black = "^22.12.0"
 isort = "^5.11.4"
+mypy = "^1.3.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-engawa = "engawa.cli:main"
+engawa = "engawa.cli:app"
